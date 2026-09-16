@@ -2,19 +2,21 @@
 using Project.Scripts.Animation;
 using Project.Scripts.Common;
 using Project.Scripts.Config;
+using Project.Scripts.Game;
 using Project.Scripts.Level;
-using Unity.VisualScripting;
 using UnityEngine;
+using Zenject;
 
 namespace Project.Scripts.Player
 {
     [RequireComponent(typeof(Rigidbody))]
     public class PlayerInit : MonoBehaviour
     {
-        [SerializeField] private PlayerConfig _config;
         [SerializeField] private PlayerView _view;
         [SerializeField] private HitBoxObserver _hitBox;
         [SerializeField] private Transform[] _waypoints;
+
+        [Inject] private PlayerConfig _config;
 
         private PlayerModel _model;
         private PlayerController _controller;
@@ -22,10 +24,20 @@ namespace Project.Scripts.Player
         private PlayerModelSwipe _modelSwipe;
         private CustomAnimator _animator;
         private InputService _input;
+        private GameModel _gameModel;
+
+        public PlayerView View => _view;
+        public PlayerModel Model => _model;
+        public PlayerController Controller => _controller;
+
+        public void SetGameModel(GameModel gameModel)
+        {
+            _gameModel = gameModel;
+        }
 
         private void Awake()
         {
-            if (_config == null) { Debug.LogError("PlayerConfig not set!"); return; }
+            if (_config == null) { Debug.LogError("PlayerConfig not found!"); return; }
             if (_view == null) _view = GetComponent<PlayerView>();
             if (_hitBox == null) _hitBox = GetComponent<HitBoxObserver>();
 
@@ -35,12 +47,19 @@ namespace Project.Scripts.Player
 
             _model = new PlayerModel(_config);
             _controller = new PlayerController(_model, _view, _config, path);
-            _coinSystem = new PlayerCoinSystem(_model);
+
+            var vfx = new PlayerVFX(_view);
+            _coinSystem = new PlayerCoinSystem(_model, vfx);
             _modelSwipe = new PlayerModelSwipe(_model, _view);
             _animator = new CustomAnimator(_view.Animator, _model);
             _input = new InputService();
 
             _hitBox.OnItemEntered += _coinSystem.HandleItem;
+            _hitBox.OnGateEntered += _coinSystem.HandleGate;
+
+            var rb = GetComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
 
             Vector3 start = path.GetPoint(0f);
             start.y = 0.3f;
@@ -50,12 +69,17 @@ namespace Project.Scripts.Player
 
         private void OnDestroy()
         {
-            if (_hitBox != null && _coinSystem != null) _hitBox.OnItemEntered -= _coinSystem.HandleItem;
+            if (_hitBox == null || _coinSystem == null) return;
+
+            _hitBox.OnItemEntered -= _coinSystem.HandleItem;
+            _hitBox.OnGateEntered -= _coinSystem.HandleGate;
         }
 
         private void Update()
         {
             if (_controller == null) return;
+            if (_gameModel == null) return;
+            if (_gameModel.CurrentState != EGameState.Gameplay) return;
 
             _input.Run();
             _controller.HandleInput(_input.Horizontal, Time.deltaTime);

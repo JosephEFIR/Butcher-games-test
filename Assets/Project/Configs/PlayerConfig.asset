@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82532f30ed444e1cbef0e75ba6edb7ca, type: 3}
   m_Name: PlayerConfig
   m_EditorClassIdentifier: 
-  ForwardSpeed: 3
+  ForwardSpeed: 5
   LateralSpeed: 25
   XLimit: 1.5
   TurnSmooth: 6
@@ -22,4 +22,8 @@ MonoBehaviour:
     m_Bits: 64
   PlayerRadius: 0.4
   WallCheckDistance: 5
+  ObstacleLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  ObstacleCheckDistance: 0.8
   MaxRichness: 1000

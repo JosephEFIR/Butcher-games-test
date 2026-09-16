@@ -58,7 +58,7 @@ namespace Project.Scripts.Player
                 }
             }
 
-            if (gotRicher && _view.RichnessVfx != null) _view.RichnessVfx.Play();
+            if (gotRicher && _view.PositiveVFX != null) _view.PositiveVFX.Play();
         }
     }
 }

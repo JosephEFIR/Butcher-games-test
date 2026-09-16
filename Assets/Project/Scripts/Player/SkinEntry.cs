@@ -8,5 +8,6 @@ namespace Project.Scripts.Player
     {
         public float Threshold;
         public GameObject Model;
+        public string DisplayName;  
     }
 }

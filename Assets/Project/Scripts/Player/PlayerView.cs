@@ -7,10 +7,12 @@ namespace Project.Scripts.Player
     {
         [SerializeField] private Animator _animator;
         [SerializeField] private List<SkinEntry> _skins;
-        [SerializeField] private ParticleSystem _richnessVfx;
+        [SerializeField] private ParticleSystem positiveVfx;
+        [SerializeField] private ParticleSystem negativeVfx;
 
         public Animator Animator => _animator;
         public List<SkinEntry> Skins => _skins;
-        public ParticleSystem RichnessVfx => _richnessVfx;
+        public ParticleSystem PositiveVFX => positiveVfx;
+        public ParticleSystem NegativeVFX => negativeVfx;
     }
 }

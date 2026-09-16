@@ -6,6 +6,8 @@ namespace Project.Scripts.Player
 {
     public class PlayerController
     {
+        private const float PlayerY = 0.3f;
+
         private readonly PlayerModel _model;
         private readonly PlayerView _view;
         private readonly PlayerConfig _config;
@@ -29,23 +31,29 @@ namespace Project.Scripts.Player
         public void Run(float deltaTime)
         {
             if (!_model.IsAlive || _model.IsFinished) return;
-
-            _distance += _config.ForwardSpeed * deltaTime;
-
+            
             Vector3 rawForward = _path.GetDirection(_distance);
             _smoothForward = Vector3.Slerp(
                 _smoothForward, rawForward, deltaTime * _config.TurnSmooth).normalized;
-
             Vector3 forward = _smoothForward;
+            
+            _currentX = Mathf.MoveTowards(_currentX, _desiredX, _config.LateralSmooth * deltaTime);
+
             Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
-
-            _currentX = Mathf.MoveTowards(
-                _currentX, _desiredX, _config.LateralSmooth * deltaTime);
-
             _currentX = ClampXByWalls(_path.GetPoint(_distance), right, _currentX);
-
+            
+            Vector3 checkOrigin = _view.transform.position + Vector3.up * 0.5f;
+            bool blocked = Physics.Raycast(
+                checkOrigin,
+                forward,
+                _config.ObstacleCheckDistance,
+                _config.ObstacleLayer);
+            
+            if (!blocked)
+                _distance += _config.ForwardSpeed * deltaTime;
+            
             Vector3 pathPoint = _path.GetPoint(_distance);
-            pathPoint.y = _view.transform.position.y;
+            pathPoint.y = PlayerY;
             Vector3 targetPos = pathPoint + right * _currentX;
 
             Vector3 currentPos = _view.transform.position;
@@ -56,7 +64,7 @@ namespace Project.Scripts.Player
             if (moveDelta.magnitude > maxMove)
                 newPos = currentPos + moveDelta.normalized * maxMove;
 
-            newPos.y = _view.transform.position.y;
+            newPos.y = PlayerY;
             _view.transform.position = newPos;
 
             if (forward.sqrMagnitude > 0.0001f)
@@ -86,11 +94,11 @@ namespace Project.Scripts.Player
             float maxLeft = _config.WallCheckDistance;
 
             if (Physics.Raycast(checkOrigin, right, out var hitR,
-                _config.WallCheckDistance, _config.WallLayer))
+                    _config.WallCheckDistance, _config.WallLayer))
                 maxRight = hitR.distance - _config.PlayerRadius;
 
             if (Physics.Raycast(checkOrigin, -right, out var hitL,
-                _config.WallCheckDistance, _config.WallLayer))
+                    _config.WallCheckDistance, _config.WallLayer))
                 maxLeft = hitL.distance - _config.PlayerRadius;
 
             float limit = Mathf.Min(maxLeft, maxRight, _config.XLimit);
