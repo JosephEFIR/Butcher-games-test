@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Project.Scripts.Animation;
+using Project.Scripts.Audio;
 using Project.Scripts.Common;
 using Project.Scripts.Config;
 using Project.Scripts.Game;
@@ -17,6 +18,7 @@ namespace Project.Scripts.Player
         [SerializeField] private Transform[] _waypoints;
 
         [Inject] private PlayerConfig _config;
+        [Inject] private SoundService _sound;
 
         private PlayerModel _model;
         private PlayerController _controller;
@@ -28,7 +30,6 @@ namespace Project.Scripts.Player
 
         public PlayerView View => _view;
         public PlayerModel Model => _model;
-        public PlayerController Controller => _controller;
 
         public void SetGameModel(GameModel gameModel)
         {
@@ -49,8 +50,8 @@ namespace Project.Scripts.Player
             _controller = new PlayerController(_model, _view, _config, path);
 
             var vfx = new PlayerVFX(_view);
-            _coinSystem = new PlayerCoinSystem(_model, vfx);
-            _modelSwipe = new PlayerModelSwipe(_model, _view);
+            _coinSystem = new PlayerCoinSystem(_model, vfx, _sound);
+            _modelSwipe = new PlayerModelSwipe(_model, _view, _sound);
             _animator = new CustomAnimator(_view.Animator, _model);
             _input = new InputService();
 

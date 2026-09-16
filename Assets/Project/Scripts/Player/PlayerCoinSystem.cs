@@ -1,6 +1,8 @@
-﻿using Project.Scripts.Common;
+﻿using Project.Scripts.Audio;
+using Project.Scripts.Common;
 using Project.Scripts.Gameplay;
 using Project.Scripts.Level.Gates;
+using Project.Scripts.Sound;
 using UnityEngine;
 
 namespace Project.Scripts.Player
@@ -9,11 +11,13 @@ namespace Project.Scripts.Player
     {
         private readonly PlayerModel _model;
         private readonly PlayerVFX _vfx;
+        private readonly SoundService _sound;
 
-        public PlayerCoinSystem(PlayerModel model, PlayerVFX vfx)
+        public PlayerCoinSystem(PlayerModel model, PlayerVFX vfx, SoundService sound)
         {
             _model = model;
             _vfx = vfx;
+            _sound = sound;
         }
 
         public void HandleItem(Item item)
@@ -21,17 +25,15 @@ namespace Project.Scripts.Player
             switch (item.Type)
             {
                 case EItemType.Coin:
-                    if (item.Value >= 0) _vfx.PlayPositive();
-                    else _vfx.PlayNegative();
-
+                    _vfx.PlayPositive();
+                    _sound.Play(ESoundType.CoinPickup);
                     _model.Coins.Value += item.Value;
                     if (_model.Coins.Value < 0) _model.Coins.Value = 0;
                     break;
 
                 case EItemType.Alcohol:
-                    if (item.Value >= 0) _vfx.PlayNegative();
-                    else _vfx.PlayNegative();
-
+                    _vfx.PlayPositive();
+                    _sound.Play(ESoundType.CoinPickup);
                     _model.Coins.Value = Mathf.Max(0, _model.Coins.Value - item.Value);
                     break;
             }
@@ -47,11 +49,13 @@ namespace Project.Scripts.Player
             {
                 case EGateType.Positive:
                     _vfx.PlayPositive();
+                    _sound.Play(ESoundType.GatePositive);
                     _model.Coins.Value += gate.Value;
                     break;
 
                 case EGateType.Negative:
                     _vfx.PlayNegative();
+                    _sound.Play(ESoundType.GateNegative);
                     _model.Coins.Value = Mathf.Max(0, _model.Coins.Value - gate.Value);
                     break;
             }

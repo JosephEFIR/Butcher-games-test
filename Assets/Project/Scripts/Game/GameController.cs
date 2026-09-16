@@ -1,4 +1,6 @@
 ﻿using System;
+using Project.Scripts.Audio;
+using Project.Scripts.Sound;
 using UnityEngine.SceneManagement;
 
 namespace Project.Scripts.Game
@@ -7,13 +9,15 @@ namespace Project.Scripts.Game
     {
         private readonly GameModel _model;
         private readonly FinishSystem _finishSystem;
+        private readonly SoundService _sound;
 
         public event Action<EGameState> OnStateChanged;
 
-        public GameController(GameModel model, FinishSystem finishSystem)
+        public GameController(GameModel model, FinishSystem finishSystem, SoundService sound)
         {
             _model = model;
             _finishSystem = finishSystem;
+            _sound = sound;
         }
 
         public void StartGame() => ChangeState(EGameState.Gameplay);
@@ -45,7 +49,27 @@ namespace Project.Scripts.Game
         {
             if (_model.CurrentState == newState) return;
             _model.CurrentState = newState;
+
+            PlayStateSound(newState);
             OnStateChanged?.Invoke(newState);
+        }
+
+        private void PlayStateSound(EGameState state)
+        {
+            if (_sound == null)
+            {
+                return;
+            }
+
+            switch (state)
+            {
+                case EGameState.Win:
+                    _sound.Play(ESoundType.Win);
+                    break;
+                case EGameState.Lose:
+                    _sound.Play(ESoundType.Lose);
+                    break;
+            }
         }
     }
 }
