@@ -1,5 +1,6 @@
 ﻿using Project.Scripts.Audio;
 using Project.Scripts.Config;
+using Project.Scripts.Game;
 using Project.Scripts.Player;
 using Project.Scripts.UI;
 using UnityEngine;
@@ -17,10 +18,13 @@ namespace Project.Scripts.Game
             Container.Bind<PlayerConfig>().FromInstance(_playerConfig).AsSingle();
             Container.Bind<SoundConfig>().FromInstance(_soundConfig).AsSingle();
             
+            Container.Bind<GameModel>().AsSingle();
+            
             Container.Bind<GameInit>().FromComponentInHierarchy().AsSingle();
             Container.Bind<PlayerInit>().FromComponentInHierarchy().AsSingle();
             Container.Bind<UIManager>().FromComponentInHierarchy().AsSingle();
             Container.Bind<AudioInit>().FromComponentInHierarchy().AsSingle();
+            Container.Bind<HitBoxObserver>().FromComponentInHierarchy().AsSingle();
             
             Container.Bind<SoundService>().FromMethod(ctx => ctx.Container.Resolve<AudioInit>().Service).AsSingle();
         }

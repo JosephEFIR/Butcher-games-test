@@ -21,8 +21,9 @@ namespace Project.Scripts.Player
 
             _sorted = new List<SkinEntry>(_view.Skins);
             _sorted.Sort((a, b) => a.Threshold.CompareTo(b.Threshold));
-
-            ApplyForRichness(_model.Coins.Value);
+            
+            _currentIndex = FindTierIndex(_model.Coins.Value);
+            ApplySkinVisual(_currentIndex);
         }
 
         public void Run()
@@ -32,32 +33,45 @@ namespace Project.Scripts.Player
 
         private void ApplyForRichness(float coins)
         {
-            int targetIndex = -1;
-
-            for (int i = 0; i < _sorted.Count; i++)
-            {
-                if (coins >= _sorted[i].Threshold)
-                    targetIndex = i;
-                else
-                    break;
-            }
+            int targetIndex = FindTierIndex(coins);
 
             if (targetIndex == _currentIndex) return;
 
             bool gotRicher = targetIndex > _currentIndex;
             _currentIndex = targetIndex;
 
+            ApplySkinVisual(_currentIndex);
+
+            if (gotRicher)
+            {
+                if (_sound != null)
+                    _sound.Play(ESoundType.SkinUpgrade);
+
+                if (_view.PositiveVFX != null)
+                    _view.PositiveVFX.Play();
+            }
+        }
+
+        private int FindTierIndex(float coins)
+        {
+            int target = -1;
+            for (int i = 0; i < _sorted.Count; i++)
+            {
+                if (coins >= _sorted[i].Threshold)
+                    target = i;
+                else
+                    break;
+            }
+            return target;
+        }
+
+        private void ApplySkinVisual(int index)
+        {
             for (int i = 0; i < _sorted.Count; i++)
             {
                 if (_sorted[i].Model != null)
-                    _sorted[i].Model.SetActive(i == _currentIndex);
+                    _sorted[i].Model.SetActive(i == index);
             }
-
-            if (gotRicher && _sound != null)
-                _sound.Play(ESoundType.SkinUpgrade);
-
-            if (gotRicher && _view.PositiveVFX != null)
-                _view.PositiveVFX.Play();
         }
     }
 }

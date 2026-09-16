@@ -32,8 +32,8 @@ namespace Project.Scripts.Player
                     break;
 
                 case EItemType.Alcohol:
-                    _vfx.PlayPositive();
-                    _sound.Play(ESoundType.CoinPickup);
+                    _vfx.PlayNegative();
+                    _sound.Play(ESoundType.GateNegative);
                     _model.Coins.Value = Mathf.Max(0, _model.Coins.Value - item.Value);
                     break;
             }
@@ -44,7 +44,6 @@ namespace Project.Scripts.Player
         public void HandleGate(Gate gate)
         {
             if (!gate.TryUse()) return;
-
             switch (gate.Type)
             {
                 case EGateType.Positive:
